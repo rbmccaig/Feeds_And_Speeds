@@ -1,0 +1,959 @@
+﻿@page "/"
+@using System.Globalization
+
+<PageTitle>Feeds and Speeds Calculator</PageTitle>
+
+<div class="calculator-container">
+    <div class="header-section">
+        <label class="header-label">CUTTER DESCRIPTION</label>
+        <input type="text" value="@Nomen" @onchange="@((e) => Nomen = e.Value?.ToString() ?? "")" class="header-input" />
+    </div>
+
+    <div class="calc-grid">
+        <div class="grid-row">
+            <label class="label-left">Diameter</label>
+            <input type="text" value="@TxtDia" @onchange="HandleDiaChange" class="input-center" />
+            <label class="label-right">Inches</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Cutting Speed</label>
+            <input type="text" value="@TxtSFM" @onchange="HandleSFMChange" class="input-center" />
+            <label class="label-right">Ft/Min</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">RPM</label>
+            <input type="text" value="@TxtRPM" @onchange="HandleRPMChange" class="input-center" />
+            <label class="label-right"></label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Feed Rate</label>
+            <input type="text" value="@TxtIPM" @onchange="HandleIPMChange" class="input-center" />
+            <label class="label-right">In/Min</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Feed/Rev</label>
+            <input type="text" value="@TxtIPR" @onchange="HandleIPRChange" class="input-center" />
+            <label class="label-right">Inches</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left"># Flutes</label>
+            <input type="text" value="@TxtFL" @onchange="HandleFLChange" class="input-center" />
+            <label class="label-right"></label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Feed/Tooth</label>
+            <input type="text" value="@TxtIPT" @onchange="HandleIPTChange" class="input-center" />
+            <label class="label-right">Inches</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">% Radial DOC</label>
+            <input type="text" value="@TxtPerCentRadialDOC" @onchange="HandlePerCentRadialDOCChange" class="input-center" />
+            <label class="label-right">%</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Radial DOC</label>
+            <input type="text" value="@TxtRadialDOC" @onchange="HandleRadialDOCChange" class="input-center" />
+            <label class="label-right">Inches</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Chip at Radial DOC</label>
+            <input type="text" value="@TxtChipAtRadialDOC" @onchange="HandleChipAtRadialDOCChange" class="input-center" />
+            <label class="label-right">(Chip Thinning)</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Axial DOC</label>
+            <input type="text" value="@TxtAxialDOC" @onchange="HandleAxialDOCChange" class="input-center" />
+            <label class="label-right">Inches</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Removal Rate</label>
+            <input type="text" value="@TxtMRR" readonly class="input-center" />
+            <label class="label-right">Cubic In/Min</label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">K Factor (Machinability)</label>
+            <input type="text" value="@TxtK" @onchange="HandleKChange" class="input-center" />
+            <label class="label-right"></label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Horse Power</label>
+            <input type="text" value="@TxtHP" readonly class="input-center input-disabled" />
+            <label class="label-right"></label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Tooth Passing Frequency (HZ)</label>
+            <input type="text" value="@TxtTPF" readonly class="input-center input-disabled" />
+            <label class="label-right"></label>
+        </div>
+
+        <div class="grid-row">
+            <label class="label-left">Torque</label>
+            <input type="text" value="@TxtTorque" readonly class="input-center input-disabled" />
+            <label class="label-right">Ft-lbs</label>
+        </div>
+    </div>
+
+    <div class="button-section">
+        <label class="author-label">Written by Bob McCaig</label>
+        <button @onclick="ClearAll" class="btn-clear">Clear</button>
+    </div>
+
+    <div class="error-section">
+        @if (!string.IsNullOrEmpty(TxtErr0))
+        {
+            <div class="error-text">@TxtErr0</div>
+            <div class="error-text">@TxtErr1</div>
+            <div class="error-text">@TxtErr2</div>
+        }
+    </div>
+</div>
+
+@code {
+    private const double Pi = 3.1415926535897931;
+    private const double InPerFt = 12.0;
+    private const double Two = 2.0;
+    private const double Zero = 0.0;
+    private const double HundredPercent = 100.0;
+    private const double TTHP = 5252.113122032546;
+
+    private double Dia, SFM, RPM, PerCentRadialDOC, RadialDOC, IPT, ChipAtRadialDOC, IPR, IPM;
+    private int FL;
+    private double MRR, AxialDOC, TPF, K, HP, dblTorque;
+
+    private string Nomen = "";
+    private string TxtDia = "";
+    private string TxtSFM = "";
+    private string TxtRPM = "";
+    private string TxtIPM = "";
+    private string TxtIPR = "";
+    private string TxtFL = "";
+    private string TxtIPT = "";
+    private string TxtPerCentRadialDOC = "";
+    private string TxtRadialDOC = "";
+    private string TxtChipAtRadialDOC = "";
+    private string TxtAxialDOC = "";
+    private string TxtMRR = "";
+    private string TxtK = "1";
+    private string TxtHP = "";
+    private string TxtTPF = "";
+    private string TxtTorque = "";
+
+    private string TxtErr0 = "";
+    private string TxtErr1 = "";
+    private string TxtErr2 = "";
+
+    protected override void OnInitialized()
+    {
+        double.TryParse(TxtK, out K);
+    }
+
+    private void HandleDiaChange(ChangeEventArgs e)
+    {
+        TxtDia = e.Value?.ToString() ?? "";
+        double.TryParse(TxtDia, out Dia);
+        DiaCalc();
+    }
+
+    private void HandleSFMChange(ChangeEventArgs e)
+    {
+        TxtSFM = e.Value?.ToString() ?? "";
+        double.TryParse(TxtSFM, out SFM);
+        SetSFM();
+    }
+
+    private void HandleRPMChange(ChangeEventArgs e)
+    {
+        TxtRPM = e.Value?.ToString() ?? "";
+        double.TryParse(TxtRPM, out RPM);
+        SetRPM();
+    }
+
+    private void HandleIPMChange(ChangeEventArgs e)
+    {
+        TxtIPM = e.Value?.ToString() ?? "";
+        double.TryParse(TxtIPM, out IPM);
+        SetIPM();
+    }
+
+    private void HandleIPRChange(ChangeEventArgs e)
+    {
+        TxtIPR = e.Value?.ToString() ?? "";
+        double.TryParse(TxtIPR, out IPR);
+        IPRCalc();
+    }
+
+    private void HandleFLChange(ChangeEventArgs e)
+    {
+        TxtFL = e.Value?.ToString() ?? "";
+        int.TryParse(TxtFL, out FL);
+        SetAfterFLChange();
+    }
+
+    private void HandleIPTChange(ChangeEventArgs e)
+    {
+        TxtIPT = e.Value?.ToString() ?? "";
+        double.TryParse(TxtIPT, out IPT);
+        IPTCalc();
+    }
+
+    private void HandlePerCentRadialDOCChange(ChangeEventArgs e)
+    {
+        TxtPerCentRadialDOC = e.Value?.ToString() ?? "";
+        double.TryParse(TxtPerCentRadialDOC, out PerCentRadialDOC);
+        PerCentRadialDOCCalc();
+    }
+
+    private void HandleRadialDOCChange(ChangeEventArgs e)
+    {
+        TxtRadialDOC = e.Value?.ToString() ?? "";
+        double.TryParse(TxtRadialDOC, out RadialDOC);
+        SetRadialDOC();
+    }
+
+    private void HandleChipAtRadialDOCChange(ChangeEventArgs e)
+    {
+        TxtChipAtRadialDOC = e.Value?.ToString() ?? "";
+        double.TryParse(TxtChipAtRadialDOC, out ChipAtRadialDOC);
+        ChipAtRadialDOCCalc();
+    }
+
+    private void HandleAxialDOCChange(ChangeEventArgs e)
+    {
+        TxtAxialDOC = e.Value?.ToString() ?? "";
+        double.TryParse(TxtAxialDOC, out AxialDOC);
+        AxialDOCCalc();
+    }
+
+    private void HandleKChange(ChangeEventArgs e)
+    {
+        TxtK = e.Value?.ToString() ?? "";
+        double.TryParse(TxtK, out K);
+        KCalc();
+    }
+
+    private void DiaCalc()
+    {
+        if (Dia > Zero)
+        {
+            if (SFM > Zero)
+            {
+                RPM = Math.Round(SFM * InPerFt / (Dia * Pi));
+                TxtRPM = RPM.ToString();
+                SFM = RPM * Dia * Pi / InPerFt;
+                TxtSFM = FormatDouble(SFM, 6);
+
+                if (PerCentRadialDOC > Zero)
+                {
+                    RadialDOC = Dia * PerCentRadialDOC / HundredPercent;
+                    TxtRadialDOC = RadialDOC.ToString();
+                }
+                else
+                {
+                    PerCentRadialDOC = Zero;
+                    TxtPerCentRadialDOC = "";
+                    RadialDOC = Zero;
+                    TxtRadialDOC = "";
+                }
+
+                if (IPT > Zero && FL > 0 && RadialDOC > Zero)
+                {
+                    IPT = ChipAtRadialDOC * Dia / (Two * Math.Sqrt(RadialDOC * Dia - RadialDOC * RadialDOC));
+                    IPR = IPT * FL;
+                    IPM = IPR * RPM;
+                    IPM = Math.Round(IPM, 2);
+                    TxtIPM = IPM.ToString();
+                    IPR = IPM / RPM;
+                    TxtIPR = FormatDouble(IPR, 8);
+                    IPT = IPR / FL;
+                    TxtIPT = FormatDouble(IPT, 8);
+                    CalcChipThin();
+
+                    if (IPM * RadialDOC * AxialDOC > Zero)
+                    {
+                        MRR = IPM * RadialDOC * AxialDOC;
+                        TxtMRR = FormatDouble(MRR, 6);
+                    }
+                    else
+                    {
+                        MRR = Zero;
+                        TxtMRR = "";
+                    }
+                }
+            }
+            else
+            {
+                ClearCalculatedFields();
+            }
+        }
+        else
+        {
+            ClearAllFields();
+        }
+
+        CheckCalc("DiaCalc");
+    }
+
+    private void SetSFM()
+    {
+        DiaCalc();
+    }
+
+    private void SetRPM()
+    {
+        if (Dia > Zero && RPM > Zero)
+        {
+            SFM = RPM * Dia * Pi / InPerFt;
+            TxtSFM = SFM > Zero ? FormatDouble(SFM, 6) : "";
+        }
+
+        if (IPM > Zero && RPM > Zero)
+        {
+            IPR = IPM / RPM;
+            TxtIPR = IPR > Zero ? FormatDouble(IPR, 8) : "";
+
+            if (FL > 0)
+            {
+                IPT = IPR / FL;
+                TxtIPT = IPT > Zero ? FormatDouble(IPT, 8) : "";
+            }
+
+            if (RadialDOC < Dia / Two && RadialDOC > Zero)
+            {
+                CalcChipThin();
+            }
+
+            if (AxialDOC > Zero && RadialDOC > Zero)
+            {
+                MRR = IPM * RadialDOC * AxialDOC;
+                TxtMRR = FormatDouble(MRR, 6);
+            }
+        }
+
+        if (RPM <= Zero)
+        {
+            SFM = Zero;
+            TxtSFM = "";
+            IPM = Zero;
+            TxtIPM = "";
+            IPR = Zero;
+            TxtIPR = "";
+            IPT = Zero;
+            TxtIPT = "";
+            ChipAtRadialDOC = Zero;
+            TxtChipAtRadialDOC = "";
+            MRR = Zero;
+            TxtMRR = "";
+        }
+
+        if (RPM > Zero && FL > 0)
+        {
+            TPF = RPM * FL / 60.0;
+            TxtTPF = FormatDouble(TPF, 6);
+        }
+        else
+        {
+            TxtTPF = "";
+        }
+
+        CheckCalc("SetRPM");
+    }
+
+    private void SetIPM()
+    {
+        if (IPM == Zero)
+        {
+            IPR = Zero;
+            TxtIPR = "";
+            IPT = Zero;
+            TxtIPT = "";
+            ChipAtRadialDOC = Zero;
+            TxtChipAtRadialDOC = "";
+            MRR = Zero;
+            TxtMRR = "";
+            return;
+        }
+
+        if (RPM > Zero && IPR == Zero)
+        {
+            IPR = IPM / RPM;
+            TxtIPR = IPR > Zero ? FormatDouble(IPR, 8) : "";
+        }
+
+        if (IPR > Zero && RPM > Zero)
+        {
+            IPR = IPM / RPM;
+            TxtIPR = FormatDouble(IPR, 8);
+
+            if (FL > 0)
+            {
+                IPT = IPR / FL;
+                TxtIPT = FormatDouble(IPT, 8);
+            }
+            else
+            {
+                IPT = Zero;
+                TxtIPT = "";
+            }
+
+            if (RadialDOC > Zero)
+            {
+                CalcChipThin();
+            }
+        }
+    }
+
+    private void IPRCalc()
+    {
+        if (IPR * RPM > Zero)
+        {
+            IPM = Math.Round(IPR * RPM, 2);
+            TxtIPM = IPM.ToString();
+            IPR = IPM / RPM;
+            TxtIPR = FormatDouble(IPR, 8);
+        }
+        else
+        {
+            TxtIPM = "";
+        }
+
+        if (FL > 0)
+        {
+            IPT = IPR / FL;
+            TxtIPT = FormatDouble(IPT, 8);
+        }
+        else
+        {
+            TxtIPT = "";
+        }
+
+        CheckCalc("IPRCalc");
+    }
+
+    private void SetAfterFLChange()
+    {
+        if (FL <= 0)
+        {
+            FL = 0;
+            TxtFL = "";
+            TxtIPT = "";
+            TxtIPM = "";
+            TxtMRR = "";
+            IPR = Zero;
+            TxtIPR = "";
+            IPT = Zero;
+            return;
+        }
+
+        if (FL > 0 && RPM > Zero && ChipAtRadialDOC > Zero)
+        {
+            IPR = IPT * FL;
+            IPM = IPR * RPM;
+            IPM = Math.Round(IPR * RPM, 2);
+            TxtIPM = IPM.ToString();
+            IPR = IPM / RPM;
+            TxtIPR = FormatDouble(IPR, 8);
+            IPT = IPR / FL;
+            TxtIPT = FormatDouble(IPT, 8);
+            CalcChipThin();
+        }
+
+        if (IPR > Zero)
+        {
+            if (IPT > Zero)
+            {
+                IPR = IPT * FL;
+                TxtIPR = FormatDouble(IPR, 8);
+            }
+            else if (IPR > Zero)
+            {
+                IPT = IPR / FL;
+                TxtIPT = FormatDouble(IPT, 8);
+            }
+            else
+            {
+                TxtIPR = "";
+            }
+
+            IPM = IPR * RPM;
+            if (IPM > Zero)
+            {
+                IPM = Math.Round(IPM, 2);
+                TxtIPM = IPM.ToString();
+                IPR = IPM / RPM;
+                TxtIPR = FormatDouble(IPR, 8);
+            }
+            else
+            {
+                TxtIPM = "";
+            }
+
+            IPT = IPR / FL;
+            TxtIPT = IPT > Zero ? FormatDouble(IPT, 8) : "";
+
+            if (RadialDOC > Zero && AxialDOC > Zero)
+            {
+                MRR = IPM * RadialDOC * AxialDOC;
+                TxtMRR = FormatDouble(MRR, 6);
+            }
+        }
+
+        if (RPM > Zero && FL > 0)
+        {
+            TPF = RPM * FL / 60.0;
+            TxtTPF = FormatDouble(TPF, 6);
+        }
+        else
+        {
+            TxtTPF = "";
+        }
+
+        CheckCalc("SetAfterFLChange");
+    }
+
+    private void IPTCalc()
+    {
+        if (IPT == Zero)
+        {
+            TxtIPT = "";
+            IPM = Zero;
+            TxtIPM = "";
+            IPR = Zero;
+            ChipAtRadialDOC = Zero;
+            TxtChipAtRadialDOC = "";
+            TxtIPR = "";
+            MRR = Zero;
+            TxtMRR = "";
+            HP = Zero;
+            TxtHP = "";
+            return;
+        }
+
+        if (FL > 0 && IPT > Zero && RPM > Zero)
+        {
+            IPR = IPT * FL;
+            TxtIPR = FormatDouble(IPR, 8);
+            IPM = IPR * RPM;
+            IPM = Math.Round(IPR * RPM, 2);
+            TxtIPM = IPM.ToString();
+            IPR = IPM / RPM;
+            TxtIPR = FormatDouble(IPR, 8);
+            IPT = IPR / FL;
+            TxtIPT = FormatDouble(IPT, 8);
+
+            if (RadialDOC > Zero && RadialDOC < Dia / Two)
+            {
+                CalcChipThin();
+                if (AxialDOC > Zero)
+                {
+                    MRR = IPM * RadialDOC * AxialDOC;
+                    TxtMRR = FormatDouble(MRR, 6);
+                }
+                else
+                {
+                    MRR = Zero;
+                    TxtMRR = "";
+                }
+            }
+        }
+
+        CheckCalc("IPTCalc");
+    }
+
+    private void PerCentRadialDOCCalc()
+    {
+        PerCentRadialDOC = Math.Abs(PerCentRadialDOC);
+
+        if (PerCentRadialDOC < HundredPercent)
+        {
+            RadialDOC = Dia * PerCentRadialDOC / HundredPercent;
+        }
+        else
+        {
+            RadialDOC = Dia;
+            PerCentRadialDOC = HundredPercent;
+        }
+
+        TxtPerCentRadialDOC = PerCentRadialDOC.ToString();
+        SetRadialDOC();
+    }
+
+    private void SetRadialDOC()
+    {
+        if (RadialDOC > Dia && Dia > Zero)
+        {
+            RadialDOC = Dia;
+            TxtRadialDOC = Dia.ToString();
+            TxtPerCentRadialDOC = "100";
+            TxtChipAtRadialDOC = "";
+            MRR = IPM * RadialDOC * AxialDOC;
+            if (MRR > Zero)
+            {
+                TxtMRR = FormatDouble(MRR, 6);
+                if (K > Zero && RPM > Zero)
+                {
+                    HP = HPVal(MRR, K);
+                    TxtHP = FormatDouble(HP, 7);
+                    dblTorque = HP * TTHP / RPM;
+                    TxtTorque = FormatDouble(dblTorque, 7);
+                }
+            }
+            else
+            {
+                MRR = Zero;
+                TxtMRR = "";
+                HP = Zero;
+                TxtHP = "";
+            }
+        }
+
+        if (Dia > Zero && RadialDOC > Zero)
+        {
+            PerCentRadialDOC = HundredPercent * RadialDOC / Dia;
+            TxtPerCentRadialDOC = PerCentRadialDOC.ToString();
+        }
+
+        if (RadialDOC > Zero && Dia > Zero)
+        {
+            TxtRadialDOC = RadialDOC.ToString();
+            CalcChipThin();
+        }
+        else if (RadialDOC == Zero)
+        {
+            TxtRadialDOC = "";
+            TxtChipAtRadialDOC = "";
+            TxtMRR = "";
+            TxtPerCentRadialDOC = "";
+        }
+
+        CheckCalc("SetRadialDOC");
+    }
+
+    private void ChipAtRadialDOCCalc()
+    {
+        if (RadialDOC == Zero)
+        {
+            TxtChipAtRadialDOC = "";
+            return;
+        }
+
+        if (Dia > Zero && PerCentRadialDOC < 50.0 && RPM > Zero && FL > 0)
+        {
+            IPT = ChipAtRadialDOC * Dia / (Two * Math.Sqrt(RadialDOC * Dia - RadialDOC * RadialDOC));
+            IPR = IPT * FL;
+            IPM = IPR * RPM;
+            IPM = Math.Round(IPR * RPM, 2);
+            TxtIPM = IPM.ToString();
+            IPR = IPM / RPM;
+            TxtIPR = FormatDouble(IPR, 8);
+            IPT = IPR / FL;
+            TxtIPT = FormatDouble(IPT, 8);
+            CalcChipThin();
+            MRR = IPM * RadialDOC * AxialDOC;
+            TxtMRR = MRR > Zero ? FormatDouble(MRR, 6) : "";
+            CheckCalc("ChipAtRadialDOCCalc_A");
+        }
+        else if (Dia > Zero && PerCentRadialDOC >= 50.0 && RPM > Zero && FL > 0)
+        {
+            IPR = IPT * FL;
+            TxtIPR = FormatDouble(IPR, 8);
+            IPM = Math.Round(IPR * RPM, 2);
+            TxtIPM = IPM.ToString();
+            IPR = IPM / RPM;
+            TxtIPR = FormatDouble(IPR, 8);
+            MRR = IPM * RadialDOC * AxialDOC;
+            TxtMRR = MRR > Zero ? FormatDouble(MRR, 6) : "";
+            CheckCalc("ChipAtRadialDOCCalc_B");
+        }
+    }
+
+    private void AxialDOCCalc()
+    {
+        MRR = IPM * RadialDOC * AxialDOC;
+        if (MRR > Zero)
+        {
+            TxtMRR = FormatDouble(MRR, 6);
+            if (K > Zero && RPM > Zero)
+            {
+                HP = HPVal(MRR, K);
+                TxtHP = FormatDouble(HP, 7);
+                dblTorque = HP * TTHP / RPM;
+                TxtTorque = FormatDouble(dblTorque, 7);
+            }
+        }
+        else
+        {
+            TxtMRR = "";
+            TxtHP = "";
+            TxtTorque = "";
+        }
+
+        if (Dia > Zero && string.IsNullOrWhiteSpace(Nomen))
+        {
+            Nomen = $"{TxtDia} x {TxtAxialDOC} x {TxtFL}FL x {Math.Round(SFM)}SFM {FormatDouble(IPT, 3)}IPT {Math.Round(IPM)}IPM";
+        }
+
+        CheckCalc("AxialDOCCalc");
+    }
+
+    private void KCalc()
+    {
+        if (K > Zero && MRR > Zero && RPM > Zero)
+        {
+            HP = MRR / K;
+            TxtHP = FormatDouble(HP, 7);
+            dblTorque = HP * TTHP / RPM;
+            TxtTorque = FormatDouble(dblTorque, 7);
+        }
+        else
+        {
+            TxtHP = "";
+            TxtTorque = "";
+        }
+    }
+
+    private void CalcChipThin()
+    {
+        if (Dia > Zero && RadialDOC > Zero)
+        {
+            if (PerCentRadialDOC < 50.0)
+            {
+                ChipAtRadialDOC = IPT * Two * Math.Sqrt(RadialDOC * Dia - RadialDOC * RadialDOC) / Dia;
+                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 8);
+            }
+            else if (PerCentRadialDOC >= 50.0)
+            {
+                ChipAtRadialDOC = IPT;
+                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 8);
+            }
+        }
+    }
+
+    private double HPVal(double mrr, double k)
+    {
+        return mrr / k;
+    }
+
+    private void CheckCalc(string counter)
+    {
+        const double Epsilon = 0.000000001;
+        bool noErr = true;
+        double dpDummy;
+        double dpDifference;
+
+        if (Dia > Zero && SFM > Zero)
+        {
+            dpDummy = SFM * InPerFt / (Dia * Pi);
+            dpDifference = Math.Abs(dpDummy - RPM);
+            if (dpDifference > Epsilon)
+            {
+                TxtErr0 = "RPM Val off by";
+                TxtErr1 = dpDifference.ToString();
+                TxtErr2 = counter;
+                noErr = false;
+                return;
+            }
+        }
+
+        if (IPR > Zero && RPM > Zero)
+        {
+            dpDummy = IPM / RPM;
+            dpDifference = Math.Abs(dpDummy - IPR);
+            if (dpDifference > Epsilon)
+            {
+                TxtErr0 = "IPR Val off by";
+                TxtErr1 = dpDifference.ToString();
+                TxtErr2 = counter;
+                noErr = false;
+                return;
+            }
+        }
+
+        if (IPM > Zero && RPM > Zero)
+        {
+            dpDummy = IPR * RPM;
+            dpDifference = Math.Abs(dpDummy - IPM);
+            if (dpDifference > Epsilon)
+            {
+                TxtErr0 = "IPM Val off by";
+                TxtErr1 = dpDifference.ToString();
+                TxtErr2 = counter;
+                noErr = false;
+                return;
+            }
+        }
+
+        if (IPT > Zero && FL > 0)
+        {
+            dpDummy = IPR / FL;
+            dpDifference = Math.Abs(dpDummy - IPT);
+            if (dpDifference > Epsilon)
+            {
+                TxtErr0 = "IPT Val off by";
+                TxtErr1 = dpDifference.ToString();
+                TxtErr2 = counter;
+                noErr = false;
+                return;
+            }
+        }
+
+        if (RadialDOC > Zero && Dia > Zero)
+        {
+            dpDummy = HundredPercent * RadialDOC / Dia;
+            dpDifference = Math.Abs(dpDummy - PerCentRadialDOC);
+            if (dpDifference > Epsilon)
+            {
+                TxtErr0 = "Radial DOC/% off by";
+                TxtErr1 = dpDifference.ToString();
+                TxtErr2 = counter;
+                noErr = false;
+                return;
+            }
+        }
+
+        if (ChipAtRadialDOC > Zero && Dia > Zero && RadialDOC > Zero)
+        {
+            if (PerCentRadialDOC < 50.0)
+            {
+                dpDummy = IPT * Two * Math.Sqrt(RadialDOC * Dia - RadialDOC * RadialDOC) / Dia;
+                dpDifference = Math.Abs(dpDummy - ChipAtRadialDOC);
+            }
+            else
+            {
+                dpDummy = IPT;
+                dpDifference = Math.Abs(dpDummy - ChipAtRadialDOC);
+            }
+
+            if (dpDifference > Epsilon)
+            {
+                TxtErr0 = "ChipAtRadialDOC off by";
+                TxtErr1 = dpDifference.ToString();
+                TxtErr2 = counter;
+                noErr = false;
+                return;
+            }
+        }
+
+        if (noErr)
+        {
+            TxtErr0 = "";
+            TxtErr1 = "";
+            TxtErr2 = "";
+
+            if (IPM > Zero && RadialDOC > Zero && AxialDOC > Zero)
+            {
+                MRR = AxialDOC * RadialDOC * IPM;
+                TxtMRR = FormatDouble(MRR, 6);
+
+                if (K > Zero && RPM > Zero)
+                {
+                    HP = HPVal(MRR, K);
+                    TxtHP = FormatDouble(HP, 7);
+                    dblTorque = HP * TTHP / RPM;
+                    TxtTorque = FormatDouble(dblTorque, 7);
+                }
+            }
+            else
+            {
+                if (IPM <= Zero || RadialDOC <= Zero)
+                {
+                    MRR = Zero;
+                    TxtMRR = "";
+                    HP = Zero;
+                    TxtHP = "";
+                    dblTorque = Zero;
+                    TxtTorque = "";
+                }
+            }
+
+            if (RPM > Zero && FL > Zero)
+            {
+                TPF = RPM * FL / 60.0;
+                TxtTPF = FormatDouble(TPF, 6);
+            }
+            else
+            {
+                TxtTPF = "";
+            }
+        }
+    }
+
+    private void ClearCalculatedFields()
+    {
+        RPM = Zero;
+        TxtRPM = "";
+        IPM = Zero;
+        TxtIPM = "";
+        IPR = Zero;
+        TxtIPR = "";
+        IPT = Zero;
+        TxtIPT = "";
+        ChipAtRadialDOC = Zero;
+        TxtChipAtRadialDOC = "";
+        MRR = Zero;
+        TxtMRR = "";
+    }
+
+    private void ClearAllFields()
+    {
+        TxtDia = "";
+        Dia = Zero;
+        SFM = Zero;
+        TxtSFM = "";
+        RPM = Zero;
+        TxtRPM = "";
+        IPM = Zero;
+        TxtIPM = "";
+        IPR = Zero;
+        TxtIPR = "";
+        IPT = Zero;
+        TxtIPT = "";
+        FL = 0;
+        TxtFL = "";
+        RadialDOC = Zero;
+        TxtRadialDOC = "";
+        PerCentRadialDOC = Zero;
+        TxtPerCentRadialDOC = "";
+        ChipAtRadialDOC = Zero;
+        TxtChipAtRadialDOC = "";
+        AxialDOC = Zero;
+        TxtAxialDOC = "";
+        MRR = Zero;
+        TxtMRR = "";
+        TxtErr0 = "";
+        TxtErr1 = "";
+        TxtErr2 = "";
+    }
+
+    private void ClearAll()
+    {
+        Nomen = "";
+        ClearAllFields();
+        TxtK = "1";
+        K = 1.0;
+        HP = Zero;
+        TxtHP = "";
+        dblTorque = Zero;
+        TxtTorque = "";
+        TPF = Zero;
+        TxtTPF = "";
+    }
+
+    private string FormatDouble(double value, int decimals)
+    {
+        return value.ToString($"F{decimals}", CultureInfo.InvariantCulture);
+    }
+}
