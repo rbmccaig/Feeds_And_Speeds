@@ -1,0 +1,62 @@
+@page "/about"
+
+<PageTitle>About - Feeds and Speeds Calculator</PageTitle>
+
+<div style="max-width: 900px; margin: 0 auto; padding: 20px; font-family: Garamond, serif; line-height: 1.6;">
+    <h1 style="color: #333; border-bottom: 2px solid #333; padding-bottom: 10px;">Feeds and Speeds for the Browser</h1>
+    <p style="color: #666; font-style: italic; margin-bottom: 30px;">January 10, 2026</p>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        My feeds and speeds app has been available on the PC for many years now and has evolved over time. This is an abbreviated version of the same app and has been written with MS Blazor as a WebAssembly app, and is currently hosted on a free Azure account with public access.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        It functions with the thought that the Machine Operator and the NC Programmer are really interested in RPM and IPM as the two main outputs. For a copy of my full featured Speeds and Feeds app (runs on PC only), email a request to <a href="mailto:BobMcCaig@@rbmccaig.com" style="color: #0066cc;">BobMcCaig@@rbmccaig.com</a>.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        One of this app's main functions is to be able to enter the actual chip due to chip thinning, and when entering a chip value in this field, the calculator will back calculate IPT values that can be used in the standard machining feeds and speeds calculations. To wit: IPM = RPM x IPT x FL (number of teeth).
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        Since the machinist and programmer think chip/tooth (IPT) and Surface Feet per Minute (SFM), what you want as output are RPM and IPM.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        I seriously doubt you're interested in decimal parts of the RPM or feed rates that are carried out many decimal places.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        Therefore, the calculator calculates the RPM from the entered SFM and Dia, rounds the results to a whole number and then recalculates the exact corresponding SFM and displays it. This is not a bug, but rather a feature.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        Similarly, the feed rate is calculated exactly based on chip per tooth (IPT or actual, depending on which you've selected to use), and then the IPM is rounded off to two decimals, subsequently recalculating all of the relevant variables and re-displaying the results for the user. Also, to note, you can manually round the IPM to a whole number if you wish and the calculator will output the exact IPT/Chip @@ Radial DOC values based on that.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        The display of RPM and IPM that you see are exact, within the number of decimals displayed. The remaining variables that are displayed have been rounded for display purposes only and are not exact as you see them. The internal variables however are exact to double precision accuracy and are used for subsequent calculations/conversions.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        The calculator is designed such that you can change diameters and the previously entered SFM and either IPT or Actual Chip will be honored. This should save a bunch of time and thought when determining your feeds and speeds between cutters.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        The calculator has a built-in self-checking routine that is run against every entry that has been made. If it detects a calculation error that deviates one billionth of an inch or more from what it should be it will complain in red and inform you of the error. If this happens, pick a different route by re-entering a value or two to clear the error.
+    </div>
+
+    <div style="text-indent: 2em; margin-bottom: 1.5em;">
+        If you enter a Cutter Description, it will be honored, but if the description field is blank, the app will build an automated description and enter it for you in this format:
+    </div>
+
+    <div style="margin-left: 4em; font-family: 'Courier New', monospace; background-color: #f5f5f5; padding: 15px; border-left: 4px solid #333; margin-bottom: 1.5em;">
+        Dia x Axial DOC x nFL x nnnSFM x .nnnIPT nnnIPM
+        <br />
+        <span style="color: #666;">e.g.: 0.5 x 1.5 x 6FL x 250SFM .003IPT 37IPM</span>
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; text-align: center; color: #666;">
+        <p><strong>Written by Bob McCaig</strong></p>
+    </div>
+</div>
