@@ -254,7 +254,8 @@
                 RPM = Math.Round(SFM * InPerFt / (Dia * Pi));
                 TxtRPM = RPM.ToString();
                 SFM = RPM * Dia * Pi / InPerFt;
-                TxtSFM = FormatDouble(SFM, 6);
+                //TxtSFM = FormatDouble(SFM, 6);
+                TxtSFM = FormatDouble(SFM, 12);
 
                 if (PerCentRadialDOC > Zero)
                 {
@@ -277,9 +278,9 @@
                     IPM = Math.Round(IPM, 2);
                     TxtIPM = IPM.ToString();
                     IPR = IPM / RPM;
-                    TxtIPR = FormatDouble(IPR, 8);
+                    TxtIPR = FormatDouble(IPR, 12);
                     IPT = IPR / FL;
-                    TxtIPT = FormatDouble(IPT, 8);
+                    TxtIPT = FormatDouble(IPT, 12);
                     CalcChipThin();
 
                     if (IPM * RadialDOC * AxialDOC > Zero)
@@ -317,18 +318,19 @@
         if (Dia > Zero && RPM > Zero)
         {
             SFM = RPM * Dia * Pi / InPerFt;
-            TxtSFM = SFM > Zero ? FormatDouble(SFM, 6) : "";
+            //TxtSFM = SFM > Zero ? FormatDouble(SFM, 6) : "";
+            TxtSFM = SFM > Zero ? FormatDouble(SFM, 12) : "";
         }
 
         if (IPM > Zero && RPM > Zero)
         {
             IPR = IPM / RPM;
-            TxtIPR = IPR > Zero ? FormatDouble(IPR, 8) : "";
+            TxtIPR = IPR > Zero ? FormatDouble(IPR, 12) : "";
 
             if (FL > 0)
             {
                 IPT = IPR / FL;
-                TxtIPT = IPT > Zero ? FormatDouble(IPT, 8) : "";
+                TxtIPT = IPT > Zero ? FormatDouble(IPT, 12) : "";
             }
 
             if (RadialDOC < Dia / Two && RadialDOC > Zero)
@@ -390,18 +392,18 @@
         if (RPM > Zero && IPR == Zero)
         {
             IPR = IPM / RPM;
-            TxtIPR = IPR > Zero ? FormatDouble(IPR, 8) : "";
+            TxtIPR = IPR > Zero ? FormatDouble(IPR, 12) : "";
         }
 
         if (IPR > Zero && RPM > Zero)
         {
             IPR = IPM / RPM;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
 
             if (FL > 0)
             {
                 IPT = IPR / FL;
-                TxtIPT = FormatDouble(IPT, 8);
+                TxtIPT = FormatDouble(IPT, 12);
             }
             else
             {
@@ -423,7 +425,7 @@
             IPM = Math.Round(IPR * RPM, 2);
             TxtIPM = IPM.ToString();
             IPR = IPM / RPM;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
         }
         else
         {
@@ -433,7 +435,7 @@
         if (FL > 0)
         {
             IPT = IPR / FL;
-            TxtIPT = FormatDouble(IPT, 8);
+            TxtIPT = FormatDouble(IPT, 12);
         }
         else
         {
@@ -465,9 +467,9 @@
             IPM = Math.Round(IPR * RPM, 2);
             TxtIPM = IPM.ToString();
             IPR = IPM / RPM;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
             IPT = IPR / FL;
-            TxtIPT = FormatDouble(IPT, 8);
+            TxtIPT = FormatDouble(IPT, 12);
             CalcChipThin();
         }
 
@@ -476,12 +478,12 @@
             if (IPT > Zero)
             {
                 IPR = IPT * FL;
-                TxtIPR = FormatDouble(IPR, 8);
+                TxtIPR = FormatDouble(IPR, 12);
             }
             else if (IPR > Zero)
             {
                 IPT = IPR / FL;
-                TxtIPT = FormatDouble(IPT, 8);
+                TxtIPT = FormatDouble(IPT, 12);
             }
             else
             {
@@ -494,7 +496,7 @@
                 IPM = Math.Round(IPM, 2);
                 TxtIPM = IPM.ToString();
                 IPR = IPM / RPM;
-                TxtIPR = FormatDouble(IPR, 8);
+                TxtIPR = FormatDouble(IPR, 12);
             }
             else
             {
@@ -502,7 +504,7 @@
             }
 
             IPT = IPR / FL;
-            TxtIPT = IPT > Zero ? FormatDouble(IPT, 8) : "";
+            TxtIPT = IPT > Zero ? FormatDouble(IPT, 12) : "";
 
             if (RadialDOC > Zero && AxialDOC > Zero)
             {
@@ -514,7 +516,8 @@
         if (RPM > Zero && FL > 0)
         {
             TPF = RPM * FL / 60.0;
-            TxtTPF = FormatDouble(TPF, 6);
+            //TxtTPF = FormatDouble(TPF, 6);
+            TxtTPF = FormatDouble(TPF, 12);
         }
         else
         {
@@ -545,14 +548,14 @@
         if (FL > 0 && IPT > Zero && RPM > Zero)
         {
             IPR = IPT * FL;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
             IPM = IPR * RPM;
             IPM = Math.Round(IPR * RPM, 2);
             TxtIPM = IPM.ToString();
             IPR = IPM / RPM;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
             IPT = IPR / FL;
-            TxtIPT = FormatDouble(IPT, 8);
+            TxtIPT = FormatDouble(IPT, 12);
 
             if (RadialDOC > Zero && RadialDOC < Dia / Two)
             {
@@ -658,9 +661,9 @@
             IPM = Math.Round(IPR * RPM, 2);
             TxtIPM = IPM.ToString();
             IPR = IPM / RPM;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
             IPT = IPR / FL;
-            TxtIPT = FormatDouble(IPT, 8);
+            TxtIPT = FormatDouble(IPT, 12);
             CalcChipThin();
             MRR = IPM * RadialDOC * AxialDOC;
             TxtMRR = MRR > Zero ? FormatDouble(MRR, 6) : "";
@@ -669,11 +672,11 @@
         else if (Dia > Zero && PerCentRadialDOC >= 50.0 && RPM > Zero && FL > 0)
         {
             IPR = IPT * FL;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
             IPM = Math.Round(IPR * RPM, 2);
             TxtIPM = IPM.ToString();
             IPR = IPM / RPM;
-            TxtIPR = FormatDouble(IPR, 8);
+            TxtIPR = FormatDouble(IPR, 12);
             MRR = IPM * RadialDOC * AxialDOC;
             TxtMRR = MRR > Zero ? FormatDouble(MRR, 6) : "";
             CheckCalc("ChipAtRadialDOCCalc_B");
@@ -732,12 +735,12 @@
             if (PerCentRadialDOC < 50.0)
             {
                 ChipAtRadialDOC = IPT * Two * Math.Sqrt(RadialDOC * Dia - RadialDOC * RadialDOC) / Dia;
-                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 8);
+                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 12);
             }
             else if (PerCentRadialDOC >= 50.0)
             {
                 ChipAtRadialDOC = IPT;
-                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 8);
+                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 12);
             }
         }
     }
