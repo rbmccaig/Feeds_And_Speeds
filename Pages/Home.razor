@@ -1,12 +1,13 @@
 ﻿@page "/"
 @using System.Globalization
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Feeds and Speeds Calculator</PageTitle>
 
 <div class="calculator-container">
     <div class="header-section">
         <label class="header-label">CUTTER DESCRIPTION</label>
-        <input type="text" value="@Nomen" @onchange="@((e) => Nomen = e.Value?.ToString() ?? "")" class="header-input" />
+        <input type="text" value="@Nomen" @onchange="HandleNomenChange" class="header-input" />
     </div>
 
     <div class="calc-grid">
@@ -156,93 +157,187 @@
     private string TxtErr1 = "";
     private string TxtErr2 = "";
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        // Load saved values from localStorage
+        await LoadState();
+
+        // Parse K factor if not already loaded
+        if (string.IsNullOrEmpty(TxtK))
+        {
+            TxtK = "1";
+        }
         double.TryParse(TxtK, out K);
     }
 
-    private void HandleDiaChange(ChangeEventArgs e)
+    private async Task SaveState()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_Nomen", Nomen);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtDia", TxtDia);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtSFM", TxtSFM);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtRPM", TxtRPM);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtIPM", TxtIPM);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtIPR", TxtIPR);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtFL", TxtFL);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtIPT", TxtIPT);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtPerCentRadialDOC", TxtPerCentRadialDOC);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtRadialDOC", TxtRadialDOC);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtChipAtRadialDOC", TxtChipAtRadialDOC);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtAxialDOC", TxtAxialDOC);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtMRR", TxtMRR);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtK", TxtK);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtHP", TxtHP);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtTPF", TxtTPF);
+            await JSRuntime.InvokeVoidAsync("localStorage.setItem", "calc_TxtTorque", TxtTorque);
+        }
+        catch { /* Ignore localStorage errors */ }
+    }
+
+    private async Task LoadState()
+    {
+        try
+        {
+            Nomen = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_Nomen") ?? "";
+            TxtDia = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtDia") ?? "";
+            TxtSFM = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtSFM") ?? "";
+            TxtRPM = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtRPM") ?? "";
+            TxtIPM = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtIPM") ?? "";
+            TxtIPR = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtIPR") ?? "";
+            TxtFL = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtFL") ?? "";
+            TxtIPT = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtIPT") ?? "";
+            TxtPerCentRadialDOC = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtPerCentRadialDOC") ?? "";
+            TxtRadialDOC = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtRadialDOC") ?? "";
+            TxtChipAtRadialDOC = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtChipAtRadialDOC") ?? "";
+            TxtAxialDOC = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtAxialDOC") ?? "";
+            TxtMRR = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtMRR") ?? "";
+            TxtK = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtK") ?? "1";
+            TxtHP = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtHP") ?? "";
+            TxtTPF = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtTPF") ?? "";
+            TxtTorque = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "calc_TxtTorque") ?? "";
+
+            // Parse the loaded values back into their numeric variables
+            double.TryParse(TxtDia, out Dia);
+            double.TryParse(TxtSFM, out SFM);
+            double.TryParse(TxtRPM, out RPM);
+            double.TryParse(TxtIPM, out IPM);
+            double.TryParse(TxtIPR, out IPR);
+            int.TryParse(TxtFL, out FL);
+            double.TryParse(TxtIPT, out IPT);
+            double.TryParse(TxtPerCentRadialDOC, out PerCentRadialDOC);
+            double.TryParse(TxtRadialDOC, out RadialDOC);
+            double.TryParse(TxtChipAtRadialDOC, out ChipAtRadialDOC);
+            double.TryParse(TxtAxialDOC, out AxialDOC);
+            double.TryParse(TxtMRR, out MRR);
+            double.TryParse(TxtK, out K);
+            double.TryParse(TxtHP, out HP);
+            double.TryParse(TxtTPF, out TPF);
+            double.TryParse(TxtTorque, out dblTorque);
+        }
+        catch { /* Ignore localStorage errors */ }
+    }
+
+    private async Task HandleNomenChange(ChangeEventArgs e)
+    {
+        Nomen = e.Value?.ToString() ?? "";
+        await SaveState();
+    }
+
+    private async Task HandleDiaChange(ChangeEventArgs e)
     {
         TxtDia = e.Value?.ToString() ?? "";
         double.TryParse(TxtDia, out Dia);
         DiaCalc();
+        await SaveState();
     }
 
-    private void HandleSFMChange(ChangeEventArgs e)
+    private async Task HandleSFMChange(ChangeEventArgs e)
     {
         TxtSFM = e.Value?.ToString() ?? "";
         double.TryParse(TxtSFM, out SFM);
         SetSFM();
+        await SaveState();
     }
 
-    private void HandleRPMChange(ChangeEventArgs e)
+    private async Task HandleRPMChange(ChangeEventArgs e)
     {
         TxtRPM = e.Value?.ToString() ?? "";
         double.TryParse(TxtRPM, out RPM);
         SetRPM();
+        await SaveState();
     }
 
-    private void HandleIPMChange(ChangeEventArgs e)
+    private async Task HandleIPMChange(ChangeEventArgs e)
     {
         TxtIPM = e.Value?.ToString() ?? "";
         double.TryParse(TxtIPM, out IPM);
         SetIPM();
+        await SaveState();
     }
 
-    private void HandleIPRChange(ChangeEventArgs e)
+    private async Task HandleIPRChange(ChangeEventArgs e)
     {
         TxtIPR = e.Value?.ToString() ?? "";
         double.TryParse(TxtIPR, out IPR);
         IPRCalc();
+        await SaveState();
     }
 
-    private void HandleFLChange(ChangeEventArgs e)
+    private async Task HandleFLChange(ChangeEventArgs e)
     {
         TxtFL = e.Value?.ToString() ?? "";
         int.TryParse(TxtFL, out FL);
         SetAfterFLChange();
+        await SaveState();
     }
 
-    private void HandleIPTChange(ChangeEventArgs e)
+    private async Task HandleIPTChange(ChangeEventArgs e)
     {
         TxtIPT = e.Value?.ToString() ?? "";
         double.TryParse(TxtIPT, out IPT);
         IPTCalc();
+        await SaveState();
     }
 
-    private void HandlePerCentRadialDOCChange(ChangeEventArgs e)
+    private async Task HandlePerCentRadialDOCChange(ChangeEventArgs e)
     {
         TxtPerCentRadialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtPerCentRadialDOC, out PerCentRadialDOC);
         PerCentRadialDOCCalc();
+        await SaveState();
     }
 
-    private void HandleRadialDOCChange(ChangeEventArgs e)
+    private async Task HandleRadialDOCChange(ChangeEventArgs e)
     {
         TxtRadialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtRadialDOC, out RadialDOC);
         SetRadialDOC();
+        await SaveState();
     }
 
-    private void HandleChipAtRadialDOCChange(ChangeEventArgs e)
+    private async Task HandleChipAtRadialDOCChange(ChangeEventArgs e)
     {
         TxtChipAtRadialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtChipAtRadialDOC, out ChipAtRadialDOC);
         ChipAtRadialDOCCalc();
+        await SaveState();
     }
 
-    private void HandleAxialDOCChange(ChangeEventArgs e)
+    private async Task HandleAxialDOCChange(ChangeEventArgs e)
     {
         TxtAxialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtAxialDOC, out AxialDOC);
         AxialDOCCalc();
+        await SaveState();
     }
 
-    private void HandleKChange(ChangeEventArgs e)
+    private async Task HandleKChange(ChangeEventArgs e)
     {
         TxtK = e.Value?.ToString() ?? "";
         double.TryParse(TxtK, out K);
         KCalc();
+        await SaveState();
     }
 
     private void DiaCalc()
@@ -254,8 +349,7 @@
                 RPM = Math.Round(SFM * InPerFt / (Dia * Pi));
                 TxtRPM = RPM.ToString();
                 SFM = RPM * Dia * Pi / InPerFt;
-                //TxtSFM = FormatDouble(SFM, 6);
-                TxtSFM = FormatDouble(SFM, 12);
+                TxtSFM = FormatDouble(SFM, 6);
 
                 if (PerCentRadialDOC > Zero)
                 {
@@ -318,8 +412,7 @@
         if (Dia > Zero && RPM > Zero)
         {
             SFM = RPM * Dia * Pi / InPerFt;
-            //TxtSFM = SFM > Zero ? FormatDouble(SFM, 6) : "";
-            TxtSFM = SFM > Zero ? FormatDouble(SFM, 12) : "";
+            TxtSFM = SFM > Zero ? FormatDouble(SFM, 6) : "";
         }
 
         if (IPM > Zero && RPM > Zero)
@@ -516,8 +609,7 @@
         if (RPM > Zero && FL > 0)
         {
             TPF = RPM * FL / 60.0;
-            //TxtTPF = FormatDouble(TPF, 6);
-            TxtTPF = FormatDouble(TPF, 12);
+            TxtTPF = FormatDouble(TPF, 6);
         }
         else
         {
@@ -735,7 +827,14 @@
             if (PerCentRadialDOC < 50.0)
             {
                 ChipAtRadialDOC = IPT * Two * Math.Sqrt(RadialDOC * Dia - RadialDOC * RadialDOC) / Dia;
-                TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 12);
+                if (ChipAtRadialDOC > Zero) 
+                {
+                    TxtChipAtRadialDOC = FormatDouble(ChipAtRadialDOC, 12);
+                }
+                else 
+                {
+                    TxtChipAtRadialDOC = "";
+                }
             }
             else if (PerCentRadialDOC >= 50.0)
             {
@@ -941,7 +1040,7 @@
         TxtErr2 = "";
     }
 
-    private void ClearAll()
+    private async Task ClearAll()
     {
         Nomen = "";
         ClearAllFields();
@@ -953,6 +1052,9 @@
         TxtTorque = "";
         TPF = Zero;
         TxtTPF = "";
+
+        // Clear localStorage when user clicks Clear button
+        await SaveState();
     }
 
     private string FormatDouble(double value, int decimals)
