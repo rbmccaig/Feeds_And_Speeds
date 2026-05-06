@@ -6,22 +6,22 @@ html, body {
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background-color: #0a0c10;
-    color: #e2e8f0;
+    background-color: #f1f5f9;
+    color: #0f172a;
     min-height: 100%;
 }
 
 a {
-    color: #3b82f6;
+    color: #2563eb;
 }
 
 a:hover {
-    color: #60a5fa;
+    color: #1d4ed8;
 }
 
 #blazor-error-ui {
-    background: #1e1a0e;
-    border-top: 1px solid #78350f;
+    background: #fefce8;
+    border-top: 1px solid #fbbf24;
     bottom: 0;
     box-sizing: border-box;
     display: none;
@@ -30,7 +30,7 @@ a:hover {
     position: fixed;
     width: 100%;
     z-index: 1000;
-    color: #fbbf24;
+    color: #92400e;
     font-size: 13px;
 }
 
@@ -39,14 +39,13 @@ a:hover {
     position: absolute;
     right: 0.75rem;
     top: 0.5rem;
-    color: #92400e;
 }
 
 .blazor-error-boundary {
     padding: 1rem 1rem 1rem 3.7rem;
-    color: #fca5a5;
-    background-color: #1f0a0a;
-    border: 1px solid #7f1d1d;
+    color: #991b1b;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
     border-radius: 6px;
 }
 
@@ -64,14 +63,14 @@ a:hover {
 
 .loading-progress circle {
     fill: none;
-    stroke: #1e2333;
+    stroke: #e2e8f0;
     stroke-width: 0.6rem;
     transform-origin: 50% 50%;
     transform: rotate(-90deg);
 }
 
 .loading-progress circle:last-child {
-    stroke: #3b82f6;
+    stroke: #2563eb;
     stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
     transition: stroke-dasharray 0.05s ease-in-out;
 }
@@ -82,7 +81,7 @@ a:hover {
     font-weight: 600;
     font-size: 12px;
     letter-spacing: 0.05em;
-    color: #475569;
+    color: #94a3b8;
     inset: calc(25vh + 3rem) 0 auto 0;
 }
 
