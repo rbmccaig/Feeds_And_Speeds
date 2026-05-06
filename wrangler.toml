@@ -1,0 +1,5 @@
+name = "fas"
+compatibility_date = "2025-05-06"                                                                                       
+                                   
+[assets]
+directory = "./release/wwwroot"
