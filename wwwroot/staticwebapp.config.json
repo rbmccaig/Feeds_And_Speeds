@@ -3,7 +3,7 @@
       {
         "route": "/*",
         "redirect": "https://fas.rbmccaig.com",
-        "statusCode": 302
+        "statusCode": 301
       }                                                                         
     ]
   }  
