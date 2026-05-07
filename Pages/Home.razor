@@ -243,11 +243,21 @@
         Nomen = e.Value?.ToString() ?? "";
         await SaveState();
     }
-
+    private async Task HandleRadialDOCChange(ChangeEventArgs e)
+    {
+        TxtRadialDOC = e.Value?.ToString() ?? "";
+        double.TryParse(TxtRadialDOC, out RadialDOC);
+        StateHasChanged();
+        await Task.Yield();
+        SetRadialDOC();
+        await SaveState();
+    }
     private async Task HandleDiaChange(ChangeEventArgs e)
     {
         TxtDia = e.Value?.ToString() ?? "";
         double.TryParse(TxtDia, out Dia);
+        StateHasChanged();
+        await Task.Yield();
         DiaCalc();
         await SaveState();
     }
@@ -256,6 +266,8 @@
     {
         TxtSFM = e.Value?.ToString() ?? "";
         double.TryParse(TxtSFM, out SFM);
+        StateHasChanged();
+        await Task.Yield();
         SetSFM();
         await SaveState();
     }
@@ -264,14 +276,17 @@
     {
         TxtRPM = e.Value?.ToString() ?? "";
         double.TryParse(TxtRPM, out RPM);
+        StateHasChanged();
+        await Task.Yield();
         SetRPM();
         await SaveState();
     }
-
     private async Task HandleIPMChange(ChangeEventArgs e)
     {
         TxtIPM = e.Value?.ToString() ?? "";
         double.TryParse(TxtIPM, out IPM);
+        StateHasChanged();
+        await Task.Yield();
         SetIPM();
         await SaveState();
     }
@@ -280,6 +295,8 @@
     {
         TxtIPR = e.Value?.ToString() ?? "";
         double.TryParse(TxtIPR, out IPR);
+        StateHasChanged();
+        await Task.Yield();
         IPRCalc();
         await SaveState();
     }
@@ -288,6 +305,8 @@
     {
         TxtFL = e.Value?.ToString() ?? "";
         int.TryParse(TxtFL, out FL);
+        StateHasChanged();
+        await Task.Yield();
         SetAfterFLChange();
         await SaveState();
     }
@@ -296,6 +315,8 @@
     {
         TxtIPT = e.Value?.ToString() ?? "";
         double.TryParse(TxtIPT, out IPT);
+        StateHasChanged();
+        await Task.Yield();
         IPTCalc();
         await SaveState();
     }
@@ -304,15 +325,9 @@
     {
         TxtPerCentRadialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtPerCentRadialDOC, out PerCentRadialDOC);
+        StateHasChanged();
+        await Task.Yield();
         PerCentRadialDOCCalc();
-        await SaveState();
-    }
-
-    private async Task HandleRadialDOCChange(ChangeEventArgs e)
-    {
-        TxtRadialDOC = e.Value?.ToString() ?? "";
-        double.TryParse(TxtRadialDOC, out RadialDOC);
-        SetRadialDOC();
         await SaveState();
     }
 
@@ -320,6 +335,8 @@
     {
         TxtChipAtRadialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtChipAtRadialDOC, out ChipAtRadialDOC);
+        StateHasChanged();
+        await Task.Yield();
         ChipAtRadialDOCCalc();
         await SaveState();
     }
@@ -328,6 +345,8 @@
     {
         TxtAxialDOC = e.Value?.ToString() ?? "";
         double.TryParse(TxtAxialDOC, out AxialDOC);
+        StateHasChanged();
+        await Task.Yield();
         AxialDOCCalc();
         await SaveState();
     }
@@ -336,10 +355,11 @@
     {
         TxtK = e.Value?.ToString() ?? "";
         double.TryParse(TxtK, out K);
+        StateHasChanged();
+        await Task.Yield();
         KCalc();
         await SaveState();
     }
-
     private void DiaCalc()
     {
         if (Dia > Zero)
